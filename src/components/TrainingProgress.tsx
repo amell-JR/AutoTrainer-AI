@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Brain, Loader2, Zap } from 'lucide-react';
 import { FileData, TrainingResponse } from '../types';
+import { useTrainingJobs } from '../hooks/useTrainingJobs';
+import { useAuth } from '../contexts/AuthContext';
 
 interface TrainingProgressProps {
   fileData: FileData;
@@ -17,10 +19,24 @@ export default function TrainingProgress({
 }: TrainingProgressProps) {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('Preparing data...');
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const { createJob, updateJob } = useTrainingJobs();
+  const { user } = useAuth();
 
   useEffect(() => {
     const trainModel = async () => {
       try {
+        // Create training job record if user is authenticated
+        let jobId: string | null = null;
+        if (user) {
+          const job = await createJob(fileData.name, taskType);
+          jobId = job.id;
+          setCurrentJobId(jobId);
+          
+          // Update job status to training
+          await updateJob(jobId, { status: 'training' });
+        }
+
         // Simulate progress updates
         const steps = [
           'Preparing data...',
@@ -87,19 +103,53 @@ export default function TrainingProgress({
         const results: TrainingResponse = await response.json();
         
         if (results.status === 'success') {
+          // Update job record with success
+          if (jobId) {
+            await updateJob(jobId, {
+              status: 'completed',
+              model_url: results.model_url,
+              completed_at: new Date().toISOString()
+            });
+          }
           onComplete(results);
         } else {
-          onError(results.error || results.message || 'Training failed');
+          const errorMessage = results.error || results.message || 'Training failed';
+          
+          // Update job record with failure
+          if (jobId) {
+            await updateJob(jobId, {
+              status: 'failed',
+              error_message: errorMessage,
+              completed_at: new Date().toISOString()
+            });
+          }
+          
+          onError(errorMessage);
         }
 
       } catch (error) {
         console.error('Training error:', error);
-        onError(error instanceof Error ? error.message : 'Training failed');
+        const errorMessage = error instanceof Error ? error.message : 'Training failed';
+        
+        // Update job record with failure
+        if (currentJobId) {
+          try {
+            await updateJob(currentJobId, {
+              status: 'failed',
+              error_message: errorMessage,
+              completed_at: new Date().toISOString()
+            });
+          } catch (updateError) {
+            console.error('Failed to update job status:', updateError);
+          }
+        }
+        
+        onError(errorMessage);
       }
     };
 
     trainModel();
-  }, [fileData, taskType, onComplete, onError]);
+  }, [fileData, taskType, onComplete, onError, user, createJob, updateJob]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
@@ -116,6 +166,12 @@ export default function TrainingProgress({
             <p className="text-gray-600">
               Sit back and relax while we fine-tune your custom AI model
             </p>
+            
+            {user && (
+              <p className="text-sm text-blue-600 mt-2">
+                This training session will be saved to your account
+              </p>
+            )}
           </div>
 
           <div className="mb-8">
@@ -166,6 +222,7 @@ export default function TrainingProgress({
               <p className="text-sm text-blue-800">
                 <strong>What's happening:</strong> Your dataset is being processed and used to fine-tune a pre-trained language model. 
                 This creates a custom AI model optimized for your specific task and data patterns.
+                {user && ' This training session is being saved to your account for future reference.'}
               </p>
             </div>
           </div>

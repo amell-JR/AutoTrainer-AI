@@ -1,11 +1,14 @@
 import React from 'react';
-import { Upload, Zap, Share2, Brain } from 'lucide-react';
+import { Upload, Zap, Share2, Brain, History, Shield } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface WelcomeProps {
   onStart: () => void;
 }
 
 export default function Welcome({ onStart }: WelcomeProps) {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
@@ -24,9 +27,17 @@ export default function Welcome({ onStart }: WelcomeProps) {
             Upload. Train. Deploy. Your custom AI in minutes.
           </p>
           
-          <p className="text-sm text-gray-500 font-medium mb-12">
+          <p className="text-sm text-gray-500 font-medium mb-8">
             Powered by <span className="text-blue-600 font-semibold">JR-Solvy</span>
           </p>
+
+          {user && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-8 inline-block">
+              <p className="text-green-800 font-medium">
+                Welcome back, {user.email}! Ready to train your next AI model?
+              </p>
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
@@ -36,7 +47,7 @@ export default function Welcome({ onStart }: WelcomeProps) {
             <p className="text-gray-600 text-lg leading-relaxed mb-8">
               Upload your dataset and watch as our platform automatically detects your task type, 
               fine-tunes a custom AI model, and provides you with a deployable solution. 
-              No technical expertise required.
+              {user ? ' Your models are saved to your account for easy access.' : ' Sign up to save and manage your models.'}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -70,6 +81,21 @@ export default function Welcome({ onStart }: WelcomeProps) {
                 </p>
               </div>
             </div>
+
+            {user && (
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg border">
+                  <History className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                  <h4 className="font-medium text-gray-900 mb-1">Training History</h4>
+                  <p className="text-xs text-gray-600">Access all your previous models</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border">
+                  <Shield className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+                  <h4 className="font-medium text-gray-900 mb-1">Secure Storage</h4>
+                  <p className="text-xs text-gray-600">Your models are safely stored</p>
+                </div>
+              </div>
+            )}
 
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
               <h4 className="font-semibold text-gray-900 mb-3">Supported Formats:</h4>

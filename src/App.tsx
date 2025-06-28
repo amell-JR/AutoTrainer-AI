@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AuthProvider } from './contexts/AuthContext';
+import Header from './components/Header';
 import Welcome from './components/Welcome';
 import FileUpload from './components/FileUpload';
 import TrainingProgress from './components/TrainingProgress';
@@ -6,7 +8,7 @@ import Results from './components/Results';
 import ErrorDisplay from './components/ErrorDisplay';
 import { AppState, FileData, TrainingResponse } from './types';
 
-function App() {
+function AppContent() {
   const [appState, setAppState] = useState<AppState>({
     currentStep: 'welcome',
     fileData: null,
@@ -79,49 +81,66 @@ function App() {
     }
   };
 
-  switch (appState.currentStep) {
-    case 'welcome':
-      return <Welcome onStart={handleStart} />;
-    
-    case 'upload':
-      return (
-        <FileUpload
-          onFileProcessed={handleFileProcessed}
-          onError={handleError}
-          onBack={handleBackToWelcome}
-        />
-      );
-    
-    case 'training':
-      return (
-        <TrainingProgress
-          fileData={appState.fileData!}
-          taskType={appState.taskType!}
-          onComplete={handleTrainingComplete}
-          onError={handleError}
-        />
-      );
-    
-    case 'results':
-      return (
-        <Results
-          results={appState.results!}
-          onStartNew={handleBackToWelcome}
-        />
-      );
-    
-    case 'error':
-      return (
-        <ErrorDisplay
-          error={appState.error!}
-          onRetry={handleRetry}
-          onBack={handleBackToWelcome}
-        />
-      );
-    
-    default:
-      return <Welcome onStart={handleStart} />;
-  }
+  const renderContent = () => {
+    switch (appState.currentStep) {
+      case 'welcome':
+        return <Welcome onStart={handleStart} />;
+      
+      case 'upload':
+        return (
+          <FileUpload
+            onFileProcessed={handleFileProcessed}
+            onError={handleError}
+            onBack={handleBackToWelcome}
+          />
+        );
+      
+      case 'training':
+        return (
+          <TrainingProgress
+            fileData={appState.fileData!}
+            taskType={appState.taskType!}
+            onComplete={handleTrainingComplete}
+            onError={handleError}
+          />
+        );
+      
+      case 'results':
+        return (
+          <Results
+            results={appState.results!}
+            onStartNew={handleBackToWelcome}
+          />
+        );
+      
+      case 'error':
+        return (
+          <ErrorDisplay
+            error={appState.error!}
+            onRetry={handleRetry}
+            onBack={handleBackToWelcome}
+          />
+        );
+      
+      default:
+        return <Welcome onStart={handleStart} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      {renderContent()}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
 export default App;
