@@ -4,9 +4,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface WelcomeProps {
   onStart: () => void;
+  onNavigateToDashboard?: () => void;
 }
 
-export default function Welcome({ onStart }: WelcomeProps) {
+export default function Welcome({ onStart, onNavigateToDashboard }: WelcomeProps) {
   const { user } = useAuth();
 
   return (
@@ -111,12 +112,24 @@ export default function Welcome({ onStart }: WelcomeProps) {
               </div>
             </div>
 
-            <button
-              onClick={onStart}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-lg"
-            >
-              Start Training Your AI Model
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={onStart}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-lg"
+              >
+                Start Training Your AI Model
+              </button>
+
+              {user && onNavigateToDashboard && (
+                <button
+                  onClick={onNavigateToDashboard}
+                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-lg flex items-center justify-center"
+                >
+                  <History className="w-5 h-5 mr-2" />
+                  View Training History
+                </button>
+              )}
+            </div>
           </div>
 
           <p className="text-xs text-gray-500">

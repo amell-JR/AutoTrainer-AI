@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Brain, User, LogOut, Settings } from 'lucide-react';
+import { Brain, User, LogOut, Settings, History } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
-export default function Header() {
+interface HeaderProps {
+  onNavigateToDashboard?: () => void;
+  showDashboardButton?: boolean;
+}
+
+export default function Header({ onNavigateToDashboard, showDashboardButton = false }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -35,6 +40,16 @@ export default function Header() {
             </div>
 
             <div className="flex items-center space-x-4">
+              {user && showDashboardButton && onNavigateToDashboard && (
+                <button
+                  onClick={onNavigateToDashboard}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <History className="w-4 h-4" />
+                  <span className="text-sm font-medium">Dashboard</span>
+                </button>
+              )}
+
               {user ? (
                 <div className="relative">
                   <button
@@ -53,6 +68,18 @@ export default function Header() {
                         <p className="text-sm font-medium text-gray-900">Signed in as</p>
                         <p className="text-sm text-gray-600 truncate">{user.email}</p>
                       </div>
+                      {onNavigateToDashboard && (
+                        <button
+                          onClick={() => {
+                            onNavigateToDashboard();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        >
+                          <History className="w-4 h-4 mr-2" />
+                          Training Dashboard
+                        </button>
+                      )}
                       <button
                         onClick={() => setShowUserMenu(false)}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"

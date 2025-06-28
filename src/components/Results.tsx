@@ -1,14 +1,17 @@
 import React from 'react';
-import { CheckCircle2, Copy, Share2, ExternalLink, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Copy, Share2, ExternalLink, RotateCcw, History } from 'lucide-react';
 import { TrainingResponse } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ResultsProps {
   results: TrainingResponse;
   onStartNew: () => void;
+  onViewDashboard?: () => void;
 }
 
-export default function Results({ results, onStartNew }: ResultsProps) {
+export default function Results({ results, onStartNew, onViewDashboard }: ResultsProps) {
   const [copied, setCopied] = React.useState(false);
+  const { user } = useAuth();
 
   const handleCopyUrl = async () => {
     if (results.model_url) {
@@ -53,6 +56,11 @@ export default function Results({ results, onStartNew }: ResultsProps) {
             <p className="text-gray-600">
               Congratulations! Your custom AI model has been successfully trained and deployed.
             </p>
+            {user && (
+              <p className="text-sm text-blue-600 mt-2">
+                This model has been saved to your account for future access.
+              </p>
+            )}
           </div>
 
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-8">
@@ -124,7 +132,7 @@ export default function Results({ results, onStartNew }: ResultsProps) {
               </li>
               <li className="flex items-start">
                 <span className="font-medium text-green-600 mr-2">4.</span>
-                Return here to train additional models with different datasets
+                {user ? 'Access this model anytime from your training dashboard' : 'Sign up to save and manage your models'}
               </li>
             </ul>
           </div>
@@ -136,7 +144,7 @@ export default function Results({ results, onStartNew }: ResultsProps) {
             </p>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onStartNew}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
@@ -144,6 +152,16 @@ export default function Results({ results, onStartNew }: ResultsProps) {
               <RotateCcw className="w-5 h-5 mr-2" />
               Train Another Model
             </button>
+
+            {user && onViewDashboard && (
+              <button
+                onClick={onViewDashboard}
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <History className="w-5 h-5 mr-2" />
+                View All Models
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -6,9 +6,13 @@ import FileUpload from './components/FileUpload';
 import TrainingProgress from './components/TrainingProgress';
 import Results from './components/Results';
 import ErrorDisplay from './components/ErrorDisplay';
+import Dashboard from './components/Dashboard';
 import { AppState, FileData, TrainingResponse } from './types';
 
+type AppView = 'main' | 'dashboard';
+
 function AppContent() {
+  const [currentView, setCurrentView] = useState<AppView>('main');
   const [appState, setAppState] = useState<AppState>({
     currentStep: 'welcome',
     fileData: null,
@@ -58,6 +62,7 @@ function AppContent() {
       results: null,
       error: null
     });
+    setCurrentView('main');
   };
 
   const handleBackToUpload = () => {
@@ -81,10 +86,18 @@ function AppContent() {
     }
   };
 
-  const renderContent = () => {
+  const handleNavigateToDashboard = () => {
+    setCurrentView('dashboard');
+  };
+
+  const handleBackFromDashboard = () => {
+    setCurrentView('main');
+  };
+
+  const renderMainContent = () => {
     switch (appState.currentStep) {
       case 'welcome':
-        return <Welcome onStart={handleStart} />;
+        return <Welcome onStart={handleStart} onNavigateToDashboard={handleNavigateToDashboard} />;
       
       case 'upload':
         return (
@@ -110,6 +123,7 @@ function AppContent() {
           <Results
             results={appState.results!}
             onStartNew={handleBackToWelcome}
+            onViewDashboard={handleNavigateToDashboard}
           />
         );
       
@@ -123,14 +137,22 @@ function AppContent() {
         );
       
       default:
-        return <Welcome onStart={handleStart} />;
+        return <Welcome onStart={handleStart} onNavigateToDashboard={handleNavigateToDashboard} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      {renderContent()}
+      <Header 
+        onNavigateToDashboard={handleNavigateToDashboard}
+        showDashboardButton={currentView === 'main'}
+      />
+      
+      {currentView === 'dashboard' ? (
+        <Dashboard onBack={handleBackFromDashboard} />
+      ) : (
+        renderMainContent()
+      )}
     </div>
   );
 }
